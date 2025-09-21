@@ -11,6 +11,7 @@ An interactive Streamlit dashboard ties the components together and visualises a
 ## Repository structure
 
 **Tensorflow project idea**
+
 ```
 ├── README.md
 ├── requirements.txt
@@ -37,6 +38,7 @@ An interactive Streamlit dashboard ties the components together and visualises a
 The system powers both a command line monitor and an interactive Plotly Dash dashboard that surfaces anomalies as they happen.
 
 **Pytorch project structure**
+
 ```
 ├── pyproject.toml            # Packaging & dependency metadata
 ├── src/anomaly_streaming/
@@ -72,6 +74,7 @@ The system powers both a command line monitor and an interactive Plotly Dash das
    ```
 
 **Tensorflow specific instructions**
+
 4. **Launch the real-time dashboard**:
 
    ```bash
