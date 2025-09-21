@@ -1,6 +1,6 @@
 # Real-time Market Anomaly Detection for Indian Equities
 
-This project demonstrates how to build a **streaming market monitoring system** for Indian equities that detects unusual trading behaviour in near real time. Intraday price and volume data are streamed from the publicly available [Yahoo Finance](https://finance.yahoo.com) API and analysed with multiple anomaly detection techniques:
+This project demonstrates how to build a **streaming market monitoring system** for Indian equities that detects unusual trading behaviour in near real time. Intraday price and volume data are streamed from the publicly available [Yahoo Finance](https://finance.yahoo.com) API and analysed with multiple anomaly detection techniques. The pipeline retains context across polls so rolling features work whether the streamer emits a single new bar or a larger backfill, allowing both incremental and bulk updates to be processed reliably.
 
 - **Isolation Forests** capture multivariate deviations across engineered statistical features.
 - **LSTM autoencoders** (TensorFlow/Keras) model temporal structure and highlight sequences that cannot be reconstructed well.
@@ -65,7 +65,7 @@ An interactive Streamlit dashboard ties the components together and visualises a
    - [`LSTMAutoencoderDetector`](src/finance_anomaly_detector/detectors/lstm_autoencoder.py) trains lightweight TensorFlow/Keras LSTM autoencoders and scores the reconstruction error of recent sequences.
    - [`SPCDetector`](src/finance_anomaly_detector/detectors/spc.py) applies statistical process control limits to short-horizon returns to catch abrupt shocks.
 
-4. **Orchestration** – [`AnomalyOrchestrator`](src/finance_anomaly_detector/orchestrator.py) stitches the pipeline together, preserves historical context and exposes detection results to other components.
+4. **Orchestration** – [`AnomalyOrchestrator`](src/finance_anomaly_detector/orchestrator.py) stitches the pipeline together, preserves historical context and exposes detection results to other components. It feeds detectors with the cumulative history so both one-bar streaming updates and multi-row backfills share the same feature engineering context.
 
 5. **Dashboard** – [`streamlit_app.py`](src/finance_anomaly_detector/dashboards/streamlit_app.py) provides live charts, detector scoreboards and anomaly alerts.
 
