@@ -1,7 +1,7 @@
 yfinance>=0.2.33
 pytz
 scikit-learn>=1.2
-tensorflow-cpu==2.16.1
+tensorflow-cpu
 streamlit>=1.32
 pytest>=7.4
 pandas>=2.0
@@ -12,4 +12,4 @@ plotly>=5.20
 dash>=2.17
 
 # Optional: LSTM detector requires PyTorch. Install separately per README, e.g.:
-# pip install --index-url https://download.pytorch.org/whl/cpu torch==2.5.1+cpu
+# pip install --index-url https://download.pytorch.org/whl/cpu torch>=2.5.1+cpu

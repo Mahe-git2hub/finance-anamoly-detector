@@ -64,8 +64,11 @@ class YahooFinanceStreamer:
             ["close", "volume"]
         ]
         data.index = self._convert_timezone(data.index)
+        data.index.name = "timestamp"
         data["symbol"] = ticker
-        data = data.reset_index().rename(columns={"index": "timestamp"})
+        data = data.reset_index()
+        if isinstance(data.columns, pd.MultiIndex):
+            data.columns = data.columns.droplevel(-1)
         return data
 
     def fetch(self) -> pd.DataFrame:

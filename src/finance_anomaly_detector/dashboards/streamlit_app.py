@@ -1,4 +1,4 @@
-"""Streamlit dashboard for the real-time anomaly detector."""
+﻿"""Streamlit dashboard for the real-time anomaly detector."""
 from __future__ import annotations
 
 import time
@@ -8,18 +8,28 @@ import pandas as pd
 import plotly.express as px
 import streamlit as st
 
-from ..config import (
+# Ensure the package is importable when running the file directly via Streamlit.
+# This supports "src/" layout without requiring an editable install during dev.
+import sys
+from pathlib import Path
+
+if __package__ in (None, ""):
+    pkg_root = Path(__file__).resolve().parents[2]  # points to the "src" folder
+    if str(pkg_root) not in sys.path:
+        sys.path.insert(0, str(pkg_root))
+
+from finance_anomaly_detector.config import (
     DashboardConfig,
     IsolationForestConfig,
     LSTMAutoencoderConfig,
     SPCConfig,
     StreamConfig,
 )
-from ..data_stream import YahooFinanceStreamer
-from ..detectors.isolation_forest import IsolationForestDetector
-from ..detectors.lstm_autoencoder import LSTMAutoencoderDetector
-from ..detectors.spc import SPCDetector
-from ..orchestrator import AnomalyOrchestrator
+from finance_anomaly_detector.data_stream import YahooFinanceStreamer
+from finance_anomaly_detector.detectors.isolation_forest import IsolationForestDetector
+from finance_anomaly_detector.detectors.lstm_autoencoder import LSTMAutoencoderDetector
+from finance_anomaly_detector.detectors.spc import SPCDetector
+from finance_anomaly_detector.orchestrator import AnomalyOrchestrator
 
 
 def _build_orchestrator(
@@ -177,12 +187,16 @@ def main() -> None:
     st.sidebar.markdown(
         "Data Source: [Yahoo Finance](https://finance.yahoo.com) – 1 minute delayed NSE market data."
     )
-    st.sidebar.markdown("Built with ❤️ using Streamlit, scikit-learn, TensorFlow and pandas.")
+    st.sidebar.markdown("Built with ❤️ using Streamlit by Mahesh G, scikit-learn, TensorFlow and pandas.")
 
     if auto_refresh:
         time.sleep(refresh_seconds)
-        st.experimental_rerun()
+        if hasattr(st, 'rerun'):
+            st.rerun()
+        else:
+            st.experimental_rerun()
 
 
 if __name__ == "__main__":
     main()
+

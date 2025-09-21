@@ -1,12 +1,15 @@
-"""LSTM autoencoder based anomaly detection using TensorFlow/Keras."""
+﻿"""LSTM autoencoder based anomaly detection using TensorFlow/Keras."""
 from __future__ import annotations
 
+import logging
 from dataclasses import dataclass, field
 from typing import Dict, List
 
 import numpy as np
 import pandas as pd
 import tensorflow as tf
+
+LOGGER = logging.getLogger(__name__)
 
 
 def _build_autoencoder(
@@ -74,8 +77,12 @@ class LSTMAutoencoderDetector:
 
             self.rows_since_train[symbol] = self.rows_since_train.get(symbol, 0) + len(group)
 
+            feature_values = buffer[feature_cols].to_numpy(np.float32)
+            feature_values = np.nan_to_num(feature_values, nan=0.0, posinf=0.0, neginf=0.0)
+            buffer.loc[:, feature_cols] = feature_values
+
             if len(buffer) >= self.min_train_size:
-                trained = self._maybe_train(symbol, buffer[feature_cols].to_numpy(np.float32))
+                trained = self._maybe_train(symbol, feature_values)
                 if trained:
                     self.rows_since_train[symbol] = 0
 
@@ -132,15 +139,19 @@ class LSTMAutoencoderDetector:
         )
 
         batch_size = min(32, len(sequences))
-        model.fit(
-            sequences,
-            sequences,
-            epochs=self.epochs,
-            batch_size=batch_size,
-            verbose=0,
-        )
+        try:
+            model.fit(
+                sequences,
+                sequences,
+                epochs=self.epochs,
+                batch_size=batch_size,
+                verbose=0,
+            )
+            reconstruction = model.predict(sequences, verbose=0)
+        except Exception as exc:  # pragma: no cover - guard against TF internal errors
+            LOGGER.exception("LSTM training failed for %s: %s", symbol, exc)
+            return False
 
-        reconstruction = model.predict(sequences, verbose=0)
         errors = np.mean(np.square(reconstruction - sequences), axis=(1, 2))
         threshold = float(errors.mean() + 2 * errors.std())
 
@@ -151,6 +162,7 @@ class LSTMAutoencoderDetector:
     def _build_sequences(self, values: np.ndarray) -> np.ndarray:
         if len(values) < self.sequence_length:
             return np.empty((0, self.sequence_length, values.shape[1]), dtype=np.float32)
+        values = np.nan_to_num(values, nan=0.0, posinf=0.0, neginf=0.0)
         sequences = [
             values[i : i + self.sequence_length]
             for i in range(0, len(values) - self.sequence_length + 1)
@@ -159,6 +171,7 @@ class LSTMAutoencoderDetector:
 
     def _score_sequence(self, symbol: str, sequence: np.ndarray) -> float:
         model = self.models[symbol]
+        sequence = np.nan_to_num(sequence, nan=0.0, posinf=0.0, neginf=0.0)
         sequence = np.expand_dims(sequence, axis=0)
         reconstruction = model.predict(sequence, verbose=0)
         error = np.mean(np.square(reconstruction - sequence))
@@ -166,3 +179,6 @@ class LSTMAutoencoderDetector:
 
 
 __all__ = ["LSTMAutoencoderDetector"]
+
+
+

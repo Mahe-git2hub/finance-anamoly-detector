@@ -1,4 +1,4 @@
-"""Live data ingestion from Google Finance."""
+﻿"""Live data ingestion from Google Finance."""
 from __future__ import annotations
 
 import logging
@@ -14,9 +14,9 @@ LOGGER = logging.getLogger(__name__)
 
 BASE_URL = "https://www.google.com/finance/quote/{symbol}"
 USER_AGENT = "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/118.0 Safari/537.36"
-PRICE_REGEX = re.compile(r'data-last-price="([0-9.,]+)"')
+PRICE_REGEX = re.compile(r'data-last-price="([0-9.,+-]+)"')
 PRICE_TEXT_REGEX = re.compile(r'<div class="YMlKec fxKbKc">([^<]+)</div>')
-CURRENCY_CLEANUP = re.compile(r"[0-9.,\s]")
+CURRENCY_CLEANUP = re.compile(r"[0-9.,\s\u202f\xa0]")
 
 
 @dataclass(slots=True)
@@ -44,13 +44,18 @@ class GoogleFinanceClient:
     def _extract_price(self, html: str) -> float:
         price_match = PRICE_REGEX.search(html)
         if price_match:
+            # Google often reports the unformatted value via data-last-price.
             return float(price_match.group(1).replace(",", ""))
-        # fall back to visible price string
+        # Fall back to the visible price string which may include currency glyphs.
         text_match = PRICE_TEXT_REGEX.search(html)
         if not text_match:
             raise ValueError("Unable to parse price from Google Finance response")
-        cleaned = text_match.group(1).strip().replace(",", "")
-        cleaned = cleaned.replace("₹", "")
+        cleaned = text_match.group(1).strip()
+        cleaned = cleaned.replace(" ", "").replace(" ", "")
+        cleaned = cleaned.replace(",", "").replace("−", "-").replace("–", "-")
+        cleaned = re.sub(r"[^0-9.\-]", "", cleaned)
+        if not cleaned or cleaned == "-":
+            raise ValueError("Unable to parse price from Google Finance response")
         return float(cleaned)
 
     def _extract_currency(self, html: str) -> str:
@@ -58,12 +63,10 @@ class GoogleFinanceClient:
         if not text_match:
             return "INR"
         raw = text_match.group(1)
-        symbol_only = CURRENCY_CLEANUP.sub("", raw)
-        if symbol_only == "₹":
+        symbol_only = CURRENCY_CLEANUP.sub("", raw).strip()
+        if not symbol_only or symbol_only in {"₹", "−"}:
             return "INR"
-        if symbol_only:
-            return symbol_only
-        return "INR"
+        return symbol_only
 
     def fetch_quote(self, symbol: str) -> Quote:
         url = BASE_URL.format(symbol=symbol)

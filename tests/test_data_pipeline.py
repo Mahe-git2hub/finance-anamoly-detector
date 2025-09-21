@@ -13,7 +13,7 @@ DATA_DIR = Path(__file__).parent / "data"
 
 
 def test_parse_quote_from_html() -> None:
-    html = (DATA_DIR / "google_reliance.html").read_text()
+    html = (DATA_DIR / "google_reliance.html").read_text(encoding="utf-8")
     quote = parse_quote_from_html("RELIANCE:NSE", html)
     assert quote.symbol == "RELIANCE:NSE"
     assert quote.price > 0
