@@ -1,7 +1,7 @@
 """End-to-end pipeline orchestrating ingestion and detectors."""
 from __future__ import annotations
 
-from dataclasses import dataclass
+from dataclasses import dataclass, fields
 from typing import Dict, Iterable, List, Sequence
 
 import numpy as np
@@ -65,7 +65,10 @@ class RealTimeAnomalyPipeline:
     def _append_history(self, quotes: Sequence[Quote]) -> None:
         if not quotes:
             return
-        frame = pd.DataFrame([q.__dict__ for q in quotes])
+        quote_fields = [field.name for field in fields(Quote)]
+        frame = pd.DataFrame(
+            [{name: getattr(quote, name) for name in quote_fields} for quote in quotes]
+        )
         self.history = pd.concat([self.history, frame], ignore_index=True)
         self.history = keep_last_rows(self.history, self.config.history_limit)
 
