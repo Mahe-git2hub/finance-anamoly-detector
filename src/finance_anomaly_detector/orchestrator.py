@@ -34,7 +34,18 @@ class AnomalyOrchestrator:
         self.raw_history.drop_duplicates(subset=["symbol", "timestamp"], keep="last", inplace=True)
         self.raw_history.sort_values(["symbol", "timestamp"], inplace=True)
 
-        features = self.feature_engineer.transform(raw)
+        # Compute features with full history so rolling windows have sufficient
+        # context, then isolate the rows that correspond to the newly streamed
+        # batch. This ensures feature engineering succeeds even when the
+        # streamer delivers a single bar per poll.
+        engineered = self.feature_engineer.transform(self.raw_history)
+
+        if engineered.empty:
+            return {"raw": raw, "features": engineered, "detections": pd.DataFrame()}
+
+        batch_keys = raw[["symbol", "timestamp"]].drop_duplicates()
+        features = engineered.merge(batch_keys, on=["symbol", "timestamp"], how="inner")
+
         if features.empty:
             return {"raw": raw, "features": features, "detections": pd.DataFrame()}
 
