@@ -1,15 +1,16 @@
 # Real-time Market Anomaly Detection for Indian Equities
 
-This project demonstrates how to build a **streaming market monitoring system** for Indian equities that detects unusual trading behaviour in near real time. Intraday price and volume data are streamed from the publicly available [Yahoo Finance](https://finance.yahoo.com) API and analysed with multiple anomaly detection techniques. The pipeline retains context across polls so rolling features work whether the streamer emits a single new bar or a larger backfill, allowing both incremental and bulk updates to be processed reliably.
+This project demonstrates how to build a **streaming market monitoring system** for Indian equities that detects unusual trading behaviour in near real time. Intraday price and volume data are streamed from the publicly available [Yahoo Finance](https://finance.yahoo.com) API and analysed with multiple anomaly detection techniques. It can also continuously ingests quotes from the publicly available [Google Finance](https://www.google.com/finance/) pages for National Stock Exchange (NSE) listings. The pipeline retains context across polls so rolling features work whether the streamer emits a single new bar or a larger backfill, allowing both incremental and bulk updates to be processed reliably.
 
-- **Isolation Forests** capture multivariate deviations across engineered statistical features.
-- **LSTM autoencoders** (TensorFlow/Keras) model temporal structure and highlight sequences that cannot be reconstructed well.
+- **Isolation Forests** capture multivariate deviations across engineered statistical features for robust outlier detection on engineered features.
+- **LSTM autoencoders** (TensorFlow/Keras) model temporal structure and highlight sequences that cannot be reconstructed well. Alternate Pytorch implementation also available - (PyTorch) to learn temporal behaviour and flag unusual sequences.
 - **Statistical process control (SPC)** charts apply rolling z-score thresholds to short-term returns.
 
 An interactive Streamlit dashboard ties the components together and visualises anomalies as they surface.
 
 ## Repository structure
 
+**Tensorflow project idea**
 ```
 ├── README.md
 ├── requirements.txt
@@ -32,6 +33,23 @@ An interactive Streamlit dashboard ties the components together and visualises a
     └── test_spc.py
 ```
 
+
+The system powers both a command line monitor and an interactive Plotly Dash dashboard that surfaces anomalies as they happen.
+
+**Pytorch project structure**
+```
+├── pyproject.toml            # Packaging & dependency metadata
+├── src/anomaly_streaming/
+│   ├── cli.py                # CLI entry point
+│   ├── config.py             # Config dataclasses
+│   ├── dash_app.py           # Plotly Dash dashboard
+│   ├── data/google_finance.py# Live data ingestion
+│   ├── detectors/            # Isolation Forest, LSTM, SPC detectors
+│   ├── features.py           # Feature engineering utilities
+│   └── pipeline.py           # Streaming orchestration
+└── tests/                    # Pytest-based regression tests
+```
+
 ## Getting started
 
 1. **Install dependencies** (preferably inside a virtual environment):
@@ -40,13 +58,21 @@ An interactive Streamlit dashboard ties the components together and visualises a
    pip install -r requirements.txt
    ```
 
-2. **Run the automated tests** to ensure the detectors behave as expected on synthetic data:
+2. **Install PyTorch CPU build** (once per environment):
+
+   ```bash
+   pip install --index-url https://download.pytorch.org/whl/cpu torch==2.5.1+cpu
+   ```
+
+
+3. **Run automated tests**:
 
    ```bash
    pytest
    ```
 
-3. **Launch the real-time dashboard**:
+**Tensorflow specific instructions**
+4. **Launch the real-time dashboard**:
 
    ```bash
    streamlit run src/finance_anomaly_detector/dashboards/streamlit_app.py
@@ -81,3 +107,36 @@ An interactive Streamlit dashboard ties the components together and visualises a
 - The LSTM autoencoder keeps models small to run comfortably on CPU-only environments. Increase sequence length or model size for richer reconstructions.
 
 Enjoy exploring live anomaly detection across Indian markets!
+
+**Pytorch specific instructions**
+4. **Start the real-time CLI monitor** (press `Ctrl+C` to stop):
+
+   ```bash
+   python -m anomaly_streaming.cli --interval 60 --symbols RELIANCE:NSE TCS:NSE
+   ```
+
+5. **Launch the interactive dashboard** (opens a Plotly Dash server on port 8050):
+
+   ```bash
+   python -m anomaly_streaming.dash_app
+   ```
+
+   The dashboard refreshes at the configured cadence, plots the latest prices and highlights anomalies from each detector ensemble.
+
+## Data source
+
+Quotes are scraped from the public Google Finance instrument pages (e.g. `https://www.google.com/finance/quote/RELIANCE:NSE`). Only the lightweight HTML response is used; no authentication or rate-limited APIs are required.
+
+## Extending
+
+- Add more tickers by editing `PipelineConfig` or passing them via CLI/ dashboard selector.
+- Tune detection sensitivity through `DetectorConfig` in `config.py` (window sizes, contamination, sequence length, sigma limits, etc.).
+- Swap the data ingestor to another Indian market source by implementing a new client that returns the `Quote` dataclass.
+
+## Testing & observability
+
+The `tests/` folder provides regression coverage for the Google Finance parser, feature engineering and history management utilities. The pipeline itself logs anomaly decisions via an internal dataframe (`RealTimeAnomalyPipeline.get_anomaly_log`) which is also exposed in the dashboard.
+
+---
+
+> **Note**: Live market data availability depends on Google Finance's/Yahoo Finance uptime and any corporate firewalls/proxy restrictions. When the service is unreachable, the pipeline keeps running and logs fetch errors without crashing.
