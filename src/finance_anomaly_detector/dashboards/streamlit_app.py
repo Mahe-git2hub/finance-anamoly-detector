@@ -2,7 +2,7 @@
 from __future__ import annotations
 
 import time
-from typing import Dict, List
+from typing import List
 
 import pandas as pd
 import plotly.express as px
@@ -25,47 +25,7 @@ from finance_anomaly_detector.config import (
     SPCConfig,
     StreamConfig,
 )
-from finance_anomaly_detector.data_stream import YahooFinanceStreamer
-from finance_anomaly_detector.detectors.isolation_forest import IsolationForestDetector
-from finance_anomaly_detector.detectors.lstm_autoencoder import LSTMAutoencoderDetector
-from finance_anomaly_detector.detectors.spc import SPCDetector
-from finance_anomaly_detector.orchestrator import AnomalyOrchestrator
-
-
-def _build_orchestrator(
-    tickers: List[str],
-    stream_config: StreamConfig,
-    iforest_config: IsolationForestConfig,
-    lstm_config: LSTMAutoencoderConfig,
-    spc_config: SPCConfig,
-) -> AnomalyOrchestrator:
-    streamer = YahooFinanceStreamer(
-        tickers=tickers,
-        interval=stream_config.interval,
-        lookback_period=stream_config.lookback_period,
-        poll_interval=stream_config.poll_interval,
-    )
-    detectors: Dict[str, object] = {
-        "Isolation Forest": IsolationForestDetector(
-            window_size=iforest_config.window_size,
-            contamination=iforest_config.contamination,
-            min_train_size=iforest_config.min_train_size,
-            random_state=iforest_config.random_state,
-        ),
-        "LSTM Autoencoder": LSTMAutoencoderDetector(
-            sequence_length=lstm_config.sequence_length,
-            encoding_dim=lstm_config.encoding_dim,
-            learning_rate=lstm_config.learning_rate,
-            epochs=lstm_config.epochs,
-            retrain_interval=lstm_config.retrain_interval,
-            min_train_size=lstm_config.min_train_size,
-        ),
-        "SPC": SPCDetector(
-            window_size=spc_config.window_size,
-            sigma_threshold=spc_config.sigma_threshold,
-        ),
-    }
-    return AnomalyOrchestrator(streamer=streamer, detectors=detectors)
+from finance_anomaly_detector.orchestrator import AnomalyOrchestrator, create_orchestrator
 
 
 def _render_price_panel(data: pd.DataFrame, anomalies: pd.DataFrame) -> None:
@@ -165,8 +125,12 @@ def main() -> None:
         "orchestrator" not in st.session_state
         or st.session_state.get("orchestrator_tickers") != tuple(tickers)
     ):
-        st.session_state["orchestrator"] = _build_orchestrator(
-            tickers, stream_config, iforest_config, lstm_config, spc_config
+        st.session_state["orchestrator"] = create_orchestrator(
+            tickers=tickers,
+            stream_config=stream_config,
+            iforest_config=iforest_config,
+            lstm_config=lstm_config,
+            spc_config=spc_config,
         )
         st.session_state["orchestrator_tickers"] = tuple(tickers)
 

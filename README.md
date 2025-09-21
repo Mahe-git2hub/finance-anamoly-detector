@@ -75,7 +75,19 @@ The system powers both a command line monitor and an interactive Plotly Dash das
 
 **Tensorflow specific instructions**
 
-4. **Launch the real-time dashboard**:
+4. **Launch the REST API**:
+
+   ```bash
+   uvicorn finance_anomaly_detector.api:app --reload
+   ```
+
+   The root endpoint (`/` or `/anomalies`) detects anomalous growth/falls over the
+   last 24 hours by default and accepts `period` values such as `2d`, `1w`, `2w`,
+   `1mo`, `1q` and `1y`. Pass comma separated tickers via the `tickers` query
+   parameter to override the defaults. The previous streaming pipeline remains
+   available under `/live`.
+
+5. **Launch the real-time dashboard**:
 
    ```bash
    streamlit run src/finance_anomaly_detector/dashboards/streamlit_app.py
@@ -118,7 +130,7 @@ Enjoy exploring live anomaly detection across Indian markets!
    python -m anomaly_streaming.cli --interval 60 --symbols RELIANCE:NSE TCS:NSE
    ```
 
-5. **Launch the interactive dashboard** (opens a Plotly Dash server on port 8050):
+6. **Launch the interactive dashboard** (opens a Plotly Dash server on port 8050):
 
    ```bash
    python -m anomaly_streaming.dash_app
