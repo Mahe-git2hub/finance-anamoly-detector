@@ -84,8 +84,10 @@ The system powers both a command line monitor and an interactive Plotly Dash das
    The root endpoint (`/` or `/anomalies`) detects anomalous growth/falls over the
    last 24 hours by default and accepts `period` values such as `2d`, `1w`, `2w`,
    `1mo`, `1q` and `1y`. Pass comma separated tickers via the `tickers` query
-   parameter to override the defaults. The previous streaming pipeline remains
-   available under `/live`.
+   parameter to override the defaults. Append `&visualize=true` to receive an
+   interactive Plotly dashboard (complete with anomaly tables) instead of raw JSON
+   – ideal for quickly inspecting the signals without writing any UI code. The
+   previous streaming pipeline remains available under `/live`.
 
 5. **Launch the real-time dashboard**:
 
