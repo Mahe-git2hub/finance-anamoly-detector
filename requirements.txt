@@ -1,0 +1,10 @@
+# Base runtime dependencies (mirrors pyproject.toml)
+pandas>=2.0
+numpy>=1.25
+httpx>=0.27
+scikit-learn>=1.4
+plotly>=5.20
+dash>=2.17
+
+# Optional: LSTM detector requires PyTorch. Install separately per README, e.g.:
+# pip install --index-url https://download.pytorch.org/whl/cpu torch==2.5.1+cpu
