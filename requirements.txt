@@ -1,16 +1,15 @@
-yfinance>=0.2.33
+yfinance>=0.2.40
 pytz
-scikit-learn>=1.2
-tensorflow-cpu
-streamlit>=1.32
-fastapi>=0.111
+scikit-learn>=1.5
+tensorflow-cpu>=2.15.0           # pin minimum; older versions have CVEs
+streamlit>=1.37                  # CVE-2024-42474 path traversal fix
+fastapi>=0.115                   # ReDoS + form parser fixes
 pytest>=7.4
 pandas>=2.0
 numpy>=1.25
-httpx>=0.27
-scikit-learn>=1.4
-plotly>=5.20
-dash>=2.17
+httpx>=0.28
+plotly>=5.22
+dash>=2.18
 
 # Optional: LSTM detector requires PyTorch. Install separately per README, e.g.:
-# pip install --index-url https://download.pytorch.org/whl/cpu torch>=2.5.1+cpu
+# pip install --index-url https://download.pytorch.org/whl/cpu torch>=2.6.0+cpu
