@@ -1,16 +1,16 @@
-yfinance>=0.2.33
-pytz
-scikit-learn>=1.2
-tensorflow-cpu
-streamlit>=1.32
-fastapi>=0.111
-pytest>=7.4
-pandas>=2.0
-numpy>=1.25
-httpx>=0.27
-scikit-learn>=1.4
-plotly>=5.20
-dash>=2.17
+yfinance>=0.2.40
+pytz>=2024.1
+scikit-learn>=1.5.0  # CVE-2024-5206 (TfidfVectorizer sensitive-data leakage) fixed in 1.5.0
+tensorflow-cpu>=2.18.0
+keras>=3.7.0  # Keras 3+ hardening; addresses CVE-2026-0897 / CVE-2026-1462 / CVE-2026-1669 and CVE-2025-12060 / CVE-2025-8747 that hit older keras via tensorflow
+streamlit>=1.44.0  # CVE-2026-33682 (SSRF/NTLM on Windows) and CVE-2024-42474 (path traversal) fixed
+fastapi>=0.115.0  # Pulls newer Starlette (CVE-2026-54283 DoS, CVE-2026-48818 SSRF, CVE-2026-48817) and python-multipart (CVE-2026-53539 DoS)
+pytest>=8.0
+pandas>=2.2.0
+numpy>=1.26.0
+httpx>=0.28.0
+plotly>=5.24.0
+dash>=2.18.0
 
 # Optional: LSTM detector requires PyTorch. Install separately per README, e.g.:
 # pip install --index-url https://download.pytorch.org/whl/cpu torch>=2.5.1+cpu
