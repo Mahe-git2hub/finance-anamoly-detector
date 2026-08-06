@@ -10,13 +10,14 @@ readme = "README.md"
 authors = [{name = "AI", email = "ai@example.com"}]
 requires-python = ">=3.10"
 dependencies = [
-    "pandas>=2.0",
+    "pandas>=2.2.3",           # CVE-2024-9880
     "numpy>=1.25",
     "httpx>=0.27",
-    "scikit-learn>=1.4",
+    "scikit-learn>=1.5.0",     # CVE-2024-5206
     "plotly>=5.20",
     "dash>=2.17",
-    "fastapi>=0.111",
+    "fastapi>=0.136.1",        # CVE-2026-48710, CVE-2025-62727
+    "starlette>=1.0.1",        # CVE-2026-48710
 ]
 
 [project.optional-dependencies]
