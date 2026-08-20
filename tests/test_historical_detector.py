@@ -43,7 +43,7 @@ def synthetic_history() -> pd.DataFrame:
     timestamps = pd.date_range(
         "2024-01-01",
         periods=60,
-        freq="H",
+        freq="h",
         tz="Asia/Kolkata",
     )
     prices = pd.Series(100.0, index=timestamps).cumsum() / 10
