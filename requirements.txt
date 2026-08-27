@@ -1,16 +1,15 @@
 yfinance>=0.2.33
-pytz
-scikit-learn>=1.2
-tensorflow-cpu
-streamlit>=1.32
-fastapi>=0.111
-pytest>=7.4
-pandas>=2.0
-numpy>=1.25
-httpx>=0.27
-scikit-learn>=1.4
-plotly>=5.20
-dash>=2.17
+pytz>=2024.1
+scikit-learn>=1.5.0  # CVE-2024-5206 TfidfVectorizer data-leak (bumped from 1.4)
+tensorflow-cpu>=2.16,<3  # add floor: pre-2.16 has 400+ historical CVEs; keep <3 pending Keras 3 retest
+streamlit>=1.54.0  # CVE-2026-33682 unauth SSRF/NTLM, CVE-2024-42474 Windows path traversal
+fastapi>=0.141.0  # pulls starlette>=1.3.1: CVE-2026-48818 SSRF, CVE-2025-62727 Range DoS, CVE-2026-54283 form DoS, CVE-2026-48710 host-header poison
+pytest>=8.3.3  # kept on 8.x line; 9.x deferred (major)
+pandas>=2.2.3
+numpy>=1.26.4  # cap left off; NumPy 2 bump deferred to a separate PR
+httpx>=0.28.1
+plotly>=5.24.0  # 6.x/7.x deferred (major API change)
+dash>=2.18.2  # 3.x/4.x deferred (React 18, callback signature changes)
 
 # Optional: LSTM detector requires PyTorch. Install separately per README, e.g.:
-# pip install --index-url https://download.pytorch.org/whl/cpu torch>=2.5.1+cpu
+# pip install --index-url https://download.pytorch.org/whl/cpu torch>=2.8.0+cpu
